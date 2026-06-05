@@ -129,8 +129,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { 
                     facingMode: currentFacingMode,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
+                    width: { ideal: 1080 },
+                    height: { ideal: 1080 },
+                    aspectRatio: { ideal: 1 }
                 },
                 audio: false
             });
