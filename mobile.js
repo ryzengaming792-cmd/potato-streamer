@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Load potato image
     const potatoImg = new Image();
-    potatoImg.src = 'assets/potato.png';
+    potatoImg.src = 'potato.png';
 
     // Get Stream ID from URL
     const urlParams = new URLSearchParams(window.location.search);
