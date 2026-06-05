@@ -112,13 +112,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     faceMesh.onResults(onResults);
 
-    // --- Camera Setup ---
     async function startCamera() {
         if (localStream) {
             localStream.getTracks().forEach(track => track.stop());
         }
+        
+        const attachStream = async (stream) => {
+            localStream = stream;
+            videoElement.srcObject = localStream;
+            await videoElement.play();
+            processVideoFrame();
+        };
+
         try {
-            localStream = await navigator.mediaDevices.getUserMedia({
+            // Try ideal high-quality constraints first
+            const stream = await navigator.mediaDevices.getUserMedia({
                 video: { 
                     facingMode: currentFacingMode,
                     width: { ideal: 1280 },
@@ -126,16 +134,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 audio: false
             });
-            videoElement.srcObject = localStream;
-            await videoElement.play();
-            
-            // Start processing frames
-            processVideoFrame();
+            await attachStream(stream);
         } catch (err) {
-            console.error("Camera error:", err);
-            statusText.textContent = "CAMERA ERROR (CHECK PERMISSIONS)";
-            statusText.className = "status disconnected";
-            alert("Camera access denied or unavailable. Please ensure you are using Safari or Chrome, and that you have granted camera permissions!");
+            console.warn("High-quality camera request failed, trying basic fallback...", err);
+            try {
+                // Fallback to absolute bare minimum constraints
+                const fallbackStream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: false
+                });
+                await attachStream(fallbackStream);
+            } catch (fallbackErr) {
+                console.error("Camera error:", fallbackErr);
+                statusText.textContent = "CAMERA ERROR";
+                statusText.className = "status disconnected";
+                alert(`Camera Error: ${fallbackErr.name} - ${fallbackErr.message}\n\n1. Ensure another app isn't using the camera.\n2. Check Chrome's Site Settings to ensure camera isn't blocked for this site.`);
+            }
         }
     }
 
