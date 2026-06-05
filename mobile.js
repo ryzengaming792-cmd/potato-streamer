@@ -74,26 +74,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Function to draw a specific facial feature from video onto the potato
-            const drawFeature = (indices) => {
-                canvasCtx.save();
-                canvasCtx.beginPath();
+            const drawFeature = (indices, padX, padY) => {
+                let fMinX = 1, fMinY = 1, fMaxX = 0, fMaxY = 0;
                 for (let i = 0; i < indices.length; i++) {
                     const lm = landmarks[indices[i][0]];
-                    const x = lm.x * w;
-                    const y = lm.y * h;
-                    if (i === 0) canvasCtx.moveTo(x, y);
-                    else canvasCtx.lineTo(x, y);
+                    if (lm.x < fMinX) fMinX = lm.x;
+                    if (lm.y < fMinY) fMinY = lm.y;
+                    if (lm.x > fMaxX) fMaxX = lm.x;
+                    if (lm.y > fMaxY) fMaxY = lm.y;
                 }
-                canvasCtx.closePath();
+                
+                const centerX = ((fMinX + fMaxX) / 2) * w;
+                const centerY = ((fMinY + fMaxY) / 2) * h;
+                const radiusX = ((fMaxX - fMinX) / 2) * w * padX;
+                const radiusY = ((fMaxY - fMinY) / 2) * h * padY;
+
+                canvasCtx.save();
+                canvasCtx.beginPath();
+                canvasCtx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
                 canvasCtx.clip();
+                
+                // Draw the raw camera feed inside the ellipse
                 canvasCtx.drawImage(results.image, 0, 0, w, h);
+                
+                // Add a subtle inner shadow/border to blend it smoothly into the potato skin
+                canvasCtx.lineWidth = 15;
+                canvasCtx.strokeStyle = 'rgba(0,0,0,0.15)';
+                canvasCtx.stroke();
+                
                 canvasCtx.restore();
             };
 
-            // Using standard MediaPipe indices exported globally
-            if(typeof FACEMESH_LEFT_EYE !== 'undefined') drawFeature(FACEMESH_LEFT_EYE);
-            if(typeof FACEMESH_RIGHT_EYE !== 'undefined') drawFeature(FACEMESH_RIGHT_EYE);
-            if(typeof FACEMESH_LIPS !== 'undefined') drawFeature(FACEMESH_LIPS);
+            // Draw eyes with 1.6x padding, and mouth with 1.3x padding so they are fully visible
+            if(typeof FACEMESH_LEFT_EYE !== 'undefined') drawFeature(FACEMESH_LEFT_EYE, 1.8, 1.8);
+            if(typeof FACEMESH_RIGHT_EYE !== 'undefined') drawFeature(FACEMESH_RIGHT_EYE, 1.8, 1.8);
+            if(typeof FACEMESH_LIPS !== 'undefined') drawFeature(FACEMESH_LIPS, 1.3, 1.4);
         }
         
         canvasCtx.restore();
