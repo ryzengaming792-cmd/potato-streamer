@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const switchOutfitBtn = document.getElementById('switchOutfitBtn');
     const switchBgBtn = document.getElementById('switchBgBtn');
     const statusText = document.getElementById('connectionStatus');
+    
+    // Calibration UI
+    const alignBtn = document.getElementById('alignBtn');
+    const calibrationControls = document.getElementById('calibrationControls');
+    const closeCalibrationBtn = document.getElementById('closeCalibrationBtn');
+    const sliderScale = document.getElementById('sliderScale');
+    const sliderX = document.getElementById('sliderX');
+    const sliderY = document.getElementById('sliderY');
 
     let isFilterOn = true;
     let currentFacingMode = 'user';
@@ -16,12 +24,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     let peer = null;
     let currentCall = null;
     
-    // Load outfits
+    // Load outfits with default calibration values
     const outfits = [
-        { name: 'BASE', src: 'potato.png' },
-        { name: 'BATMAN', src: 'batman.png' },
-        { name: 'SPIDER', src: 'spiderman.png' },
-        { name: 'POPEYE', src: 'popeye.png' }
+        { name: 'BASE', src: 'potato.png', scale: 1, ox: 0, oy: 0 },
+        { name: 'BATMAN', src: 'batman.png', scale: 1, ox: 0, oy: 0 },
+        { name: 'SPIDER', src: 'spiderman.png', scale: 1, ox: 0, oy: 0 },
+        { name: 'POPEYE', src: 'popeye.png', scale: 1, ox: 0, oy: 0 }
     ];
     outfits.forEach(o => {
         const img = new Image();
@@ -94,16 +102,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             const h = canvasElement.height;
             
             // Expand bounding box for the potato body
-            const padX = (maxX - minX) * 0.4;
-            const padY = (maxY - minY) * 0.4;
+            const currentOutfit = outfits[currentOutfitIdx];
+            const scale = currentOutfit.scale;
             
-            const px = (minX - padX) * w;
-            const py = (minY - padY) * h;
-            const pw = (maxX - minX + padX * 2) * w;
-            const ph = (maxY - minY + padY * 2) * h;
+            const padX = (maxX - minX) * 0.4 * scale;
+            const padY = (maxY - minY) * 0.4 * scale;
+            
+            const basePw = (maxX - minX + padX * 2) * w;
+            const basePh = (maxY - minY + padY * 2) * h;
+            
+            const px = (minX - padX) * w + (currentOutfit.ox * basePw);
+            const py = (minY - padY) * h + (currentOutfit.oy * basePh);
+            const pw = basePw;
+            const ph = basePh;
 
             // Draw Potato Body
-            const currentOutfitImg = outfits[currentOutfitIdx].img;
+            const currentOutfitImg = currentOutfit.img;
             if(currentOutfitImg.complete) {
                 canvasCtx.drawImage(currentOutfitImg, px, py, pw, ph);
             }
@@ -228,12 +242,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     switchOutfitBtn.addEventListener('click', () => {
         currentOutfitIdx = (currentOutfitIdx + 1) % outfits.length;
         switchOutfitBtn.textContent = `OUTFIT: ${outfits[currentOutfitIdx].name}`;
+        
+        // Update sliders if calibration menu is open
+        sliderScale.value = outfits[currentOutfitIdx].scale;
+        sliderX.value = outfits[currentOutfitIdx].ox;
+        sliderY.value = outfits[currentOutfitIdx].oy;
     });
 
     switchBgBtn.addEventListener('click', () => {
         currentBgIdx = (currentBgIdx + 1) % backgrounds.length;
         switchBgBtn.textContent = `BG: ${backgrounds[currentBgIdx].name}`;
     });
+
+    // --- Calibration Controls ---
+    alignBtn.addEventListener('click', () => {
+        calibrationControls.classList.remove('hidden');
+        sliderScale.value = outfits[currentOutfitIdx].scale;
+        sliderX.value = outfits[currentOutfitIdx].ox;
+        sliderY.value = outfits[currentOutfitIdx].oy;
+    });
+
+    closeCalibrationBtn.addEventListener('click', () => {
+        calibrationControls.classList.add('hidden');
+    });
+
+    sliderScale.addEventListener('input', (e) => outfits[currentOutfitIdx].scale = parseFloat(e.target.value));
+    sliderX.addEventListener('input', (e) => outfits[currentOutfitIdx].ox = parseFloat(e.target.value));
+    sliderY.addEventListener('input', (e) => outfits[currentOutfitIdx].oy = parseFloat(e.target.value));
 
     // --- PeerJS Setup ---
     connectBtn.addEventListener('click', () => {
