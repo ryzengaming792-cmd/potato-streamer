@@ -133,7 +133,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             processVideoFrame();
         } catch (err) {
             console.error("Camera error:", err);
-            statusText.textContent = "CAMERA ERROR";
+            statusText.textContent = "CAMERA ERROR (CHECK PERMISSIONS)";
+            statusText.className = "status disconnected";
+            alert("Camera access denied or unavailable. Please ensure you are using Safari or Chrome, and that you have granted camera permissions!");
         }
     }
 

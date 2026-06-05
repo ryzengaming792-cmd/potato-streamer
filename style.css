@@ -223,3 +223,34 @@ canvas {
     color: var(--val-red);
     font-weight: bold;
 }
+
+/* PlayStation Neon Falling Shapes */
+.shapes-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.shape {
+    position: absolute;
+    top: -10vh;
+    font-family: Arial, sans-serif;
+    animation: fall linear infinite;
+    text-shadow: 0 0 15px currentColor;
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+.shape.triangle { color: #00ffcc; } /* Neon Cyan/Green */
+.shape.circle { color: #ff3366; } /* Neon Pink/Red */
+.shape.cross { color: #3399ff; } /* Neon Blue */
+.shape.square { color: #cc33ff; } /* Neon Purple */
+
+@keyframes fall {
+    0% { transform: translateY(-10vh) rotate(0deg); }
+    100% { transform: translateY(110vh) rotate(360deg); }
+}

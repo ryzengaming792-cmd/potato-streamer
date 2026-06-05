@@ -6,10 +6,11 @@
     <title>Potato Streamer | Setup</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="shapes.js"></script>
 </head>
 <body>
     <div class="header">
-        <h1>POTATO STREAMER</h1>
+        <h1>POTATO STREAMER<br><span style="font-size: 1.2rem; color: var(--val-red); letter-spacing: 4px;">BY RADEON GAMING</span></h1>
     </div>
 
     <div class="container">
@@ -36,8 +37,8 @@
 
         <div class="val-box" id="mobileSetup" class="hidden">
             <h3>Mobile Sender Link</h3>
-            <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0; padding: 10px; background: white; width: fit-content; margin-left: auto; margin-right: auto;"></div>
-            <a id="mobileLink" href="#" target="_blank" style="color: var(--val-white); font-size: 18px; text-decoration: underline;">Open Mobile Sender on this device</a>
+            <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0; padding: 10px; background: white; width: fit-content; max-width: 100%; margin-left: auto; margin-right: auto; overflow: hidden;"></div>
+            <button id="mobileLinkBtn" class="val-btn primary" style="width: 100%; margin-top: 15px;">OPEN SENDER ON THIS DEVICE</button>
         </div>
     </div>
 
@@ -67,7 +68,11 @@
         const mobileUrl = `${currentUrl.origin}${basePath}/mobile.html?id=${streamId}`;
 
         document.getElementById('obsLink').value = obsUrl;
-        document.getElementById('mobileLink').href = mobileUrl;
+        
+        // Mobile button click
+        document.getElementById('mobileLinkBtn').addEventListener('click', () => {
+            window.location.href = mobileUrl;
+        });
 
         // Generate QR Code
         new QRCode(document.getElementById("qrcode"), {
