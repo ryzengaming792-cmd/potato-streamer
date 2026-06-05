@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const connectBtn = document.getElementById('connectBtn');
     const toggleFilterBtn = document.getElementById('toggleFilterBtn');
     const switchCameraBtn = document.getElementById('switchCameraBtn');
+    const switchOutfitBtn = document.getElementById('switchOutfitBtn');
+    const switchBgBtn = document.getElementById('switchBgBtn');
     const statusText = document.getElementById('connectionStatus');
 
     let isFilterOn = true;
@@ -14,9 +16,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     let peer = null;
     let currentCall = null;
     
-    // Load potato image
-    const potatoImg = new Image();
-    potatoImg.src = 'potato.png';
+    // Load outfits
+    const outfits = [
+        { name: 'BASE', src: 'potato.png' },
+        { name: 'BATMAN', src: 'batman.png' },
+        { name: 'SPIDER', src: 'spiderman.png' },
+        { name: 'POPEYE', src: 'popeye.png' }
+    ];
+    outfits.forEach(o => {
+        const img = new Image();
+        img.src = o.src;
+        o.img = img;
+    });
+    let currentOutfitIdx = 0;
+
+    // Load backgrounds
+    const backgrounds = [
+        { name: 'NONE', src: null },
+        { name: 'GALAXY', src: 'bg_galaxy.png' },
+        { name: 'SEA', src: 'bg_sea.png' },
+        { name: 'MOUNTAIN', src: 'bg_mountains.png' },
+        { name: 'ICE', src: 'bg_ice_mountains.png' }
+    ];
+    backgrounds.forEach(b => {
+        if (b.src) {
+            const img = new Image();
+            img.src = b.src;
+            b.img = img;
+        }
+    });
+    let currentBgIdx = 0;
 
     // Get Stream ID from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -34,6 +63,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         canvasCtx.save();
         // Clear canvas (transparent background for OBS)
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        const currentBg = backgrounds[currentBgIdx];
+        if (currentBg.img && currentBg.img.complete) {
+            canvasCtx.drawImage(currentBg.img, 0, 0, canvasElement.width, canvasElement.height);
+        }
 
         // Fill background if filter is off
         if (!isFilterOn) {
@@ -69,8 +103,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const ph = (maxY - minY + padY * 2) * h;
 
             // Draw Potato Body
-            if(potatoImg.complete) {
-                canvasCtx.drawImage(potatoImg, px, py, pw, ph);
+            const currentOutfitImg = outfits[currentOutfitIdx].img;
+            if(currentOutfitImg.complete) {
+                canvasCtx.drawImage(currentOutfitImg, px, py, pw, ph);
             }
 
             // Function to draw a specific facial feature from video onto the potato
@@ -105,10 +140,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 canvasCtx.restore();
             };
 
-            // Draw eyes with 1.6x padding, and mouth with 1.3x padding so they are fully visible
-            if(typeof FACEMESH_LEFT_EYE !== 'undefined') drawFeature(FACEMESH_LEFT_EYE, 1.8, 1.8);
-            if(typeof FACEMESH_RIGHT_EYE !== 'undefined') drawFeature(FACEMESH_RIGHT_EYE, 1.8, 1.8);
-            if(typeof FACEMESH_LIPS !== 'undefined') drawFeature(FACEMESH_LIPS, 1.3, 1.4);
+            // Draw eyes and mouth with slightly reduced padding per user request
+            if(typeof FACEMESH_LEFT_EYE !== 'undefined') drawFeature(FACEMESH_LEFT_EYE, 1.35, 1.35);
+            if(typeof FACEMESH_RIGHT_EYE !== 'undefined') drawFeature(FACEMESH_RIGHT_EYE, 1.35, 1.35);
+            if(typeof FACEMESH_LIPS !== 'undefined') drawFeature(FACEMESH_LIPS, 1.15, 1.2);
         }
         
         canvasCtx.restore();
@@ -188,6 +223,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     switchCameraBtn.addEventListener('click', () => {
         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
         startCamera();
+    });
+
+    switchOutfitBtn.addEventListener('click', () => {
+        currentOutfitIdx = (currentOutfitIdx + 1) % outfits.length;
+        switchOutfitBtn.textContent = `OUTFIT: ${outfits[currentOutfitIdx].name}`;
+    });
+
+    switchBgBtn.addEventListener('click', () => {
+        currentBgIdx = (currentBgIdx + 1) % backgrounds.length;
+        switchBgBtn.textContent = `BG: ${backgrounds[currentBgIdx].name}`;
     });
 
     // --- PeerJS Setup ---

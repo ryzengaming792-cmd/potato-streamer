@@ -50,10 +50,14 @@
 
         <div class="mobile-bottom-bar">
             <h3 id="connectionStatus" class="status disconnected" style="margin: 0 0 10px 0; font-size: 16px;">DISCONNECTED</h3>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button id="toggleFilterBtn" class="val-btn primary" style="flex: 1; padding: 15px 5px; font-size: 14px;">FILTER (ON)</button>
-                <button id="switchCameraBtn" class="val-btn secondary" style="flex: 1; padding: 15px 5px; font-size: 14px;">SWITCH CAM</button>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button id="toggleFilterBtn" class="val-btn primary" style="padding: 12px 2px; font-size: 12px;">FILTER (ON)</button>
+                <button id="switchOutfitBtn" class="val-btn secondary" style="padding: 12px 2px; font-size: 12px;">OUTFIT: BASE</button>
+                <button id="switchBgBtn" class="val-btn secondary" style="padding: 12px 2px; font-size: 12px;">BG: NONE</button>
+                <button id="switchCameraBtn" class="val-btn secondary" style="padding: 12px 2px; font-size: 12px;">SWITCH CAM</button>
             </div>
+            
             <button id="connectBtn" class="val-btn" style="width: 100%; margin-top: 10px; padding: 15px; font-size: 14px;">CONNECT TO OBS</button>
         </div>
     </div>
