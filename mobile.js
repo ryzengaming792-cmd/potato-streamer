@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let peer = null;
     let currentCall = null;
     
-    // Helper to dynamically remove white background from images
+    // Helper to dynamically remove white background using a Flood Fill algorithm
     function removeWhiteBg(imgUrl, callback) {
         const img = new Image();
         img.crossOrigin = "Anonymous";
@@ -38,13 +38,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                if (data[i] > 240 && data[i+1] > 240 && data[i+2] > 240) {
-                    data[i+3] = 0; // Make white transparent
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Treat anything brighter than this as the "white" background
+            const isWhite = (r, g, b) => r > 200 && g > 200 && b > 200;
+            
+            // Flood fill starting from the 4 corners to erase the background
+            // without erasing white parts inside the character (like Popeye's hat!)
+            const stack = [[0,0], [width-1, 0], [0, height-1], [width-1, height-1]];
+            const visited = new Uint8Array(width * height);
+            
+            while(stack.length > 0) {
+                const [x, y] = stack.pop();
+                const vIdx = y * width + x;
+                
+                // Skip if out of bounds or already checked
+                if (x < 0 || x >= width || y < 0 || y >= height || visited[vIdx]) continue;
+                
+                const idx = vIdx * 4;
+                if (isWhite(data[idx], data[idx+1], data[idx+2])) {
+                    visited[vIdx] = 1;
+                    data[idx+3] = 0; // Make pixel transparent
+                    
+                    // Check neighbors
+                    stack.push([x+1, y]);
+                    stack.push([x-1, y]);
+                    stack.push([x, y+1]);
+                    stack.push([x, y-1]);
                 }
             }
-            ctx.putImageData(imageData, 0, 0);
             
+            ctx.putImageData(imageData, 0, 0);
             const transparentImg = new Image();
             transparentImg.src = canvas.toDataURL();
             transparentImg.onload = () => callback(transparentImg);
