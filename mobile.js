@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sliderScaleY = document.getElementById('sliderScaleY');
     const sliderX = document.getElementById('sliderX');
     const sliderY = document.getElementById('sliderY');
+    const sliderEyes = document.getElementById('sliderEyes');
+    const sliderMouth = document.getElementById('sliderMouth');
 
     let isFilterOn = true;
     let currentFacingMode = 'user';
@@ -208,10 +210,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 canvasCtx.restore();
             };
 
-            // Draw eyes and mouth with slightly reduced padding per user request
-            if(typeof FACEMESH_LEFT_EYE !== 'undefined') drawFeature(FACEMESH_LEFT_EYE, 1.35, 1.35);
-            if(typeof FACEMESH_RIGHT_EYE !== 'undefined') drawFeature(FACEMESH_RIGHT_EYE, 1.35, 1.35);
-            if(typeof FACEMESH_LIPS !== 'undefined') drawFeature(FACEMESH_LIPS, 1.15, 1.2);
+            const eyesPad = parseFloat(sliderEyes.value);
+            const mouthPad = parseFloat(sliderMouth.value);
+
+            // Draw eyes and mouth with adjustable padding
+            if(typeof FACEMESH_LEFT_EYE !== 'undefined') drawFeature(FACEMESH_LEFT_EYE, eyesPad, eyesPad);
+            if(typeof FACEMESH_RIGHT_EYE !== 'undefined') drawFeature(FACEMESH_RIGHT_EYE, eyesPad, eyesPad);
+            if(typeof FACEMESH_LIPS !== 'undefined') drawFeature(FACEMESH_LIPS, mouthPad, mouthPad + 0.05);
         }
         
         canvasCtx.restore();
