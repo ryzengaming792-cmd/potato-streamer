@@ -14,7 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const alignBtn = document.getElementById('alignBtn');
     const calibrationControls = document.getElementById('calibrationControls');
     const closeCalibrationBtn = document.getElementById('closeCalibrationBtn');
-    const sliderScale = document.getElementById('sliderScale');
+    const sliderScaleX = document.getElementById('sliderScaleX');
+    const sliderScaleY = document.getElementById('sliderScaleY');
     const sliderX = document.getElementById('sliderX');
     const sliderY = document.getElementById('sliderY');
 
@@ -24,17 +25,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     let peer = null;
     let currentCall = null;
     
+    // Helper to dynamically remove white background from images
+    function removeWhiteBg(imgUrl, callback) {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i] > 240 && data[i+1] > 240 && data[i+2] > 240) {
+                    data[i+3] = 0; // Make white transparent
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+            
+            const transparentImg = new Image();
+            transparentImg.src = canvas.toDataURL();
+            transparentImg.onload = () => callback(transparentImg);
+        };
+        img.src = imgUrl;
+    }
+
     // Load outfits with default calibration values
     const outfits = [
-        { name: 'BASE', src: 'potato.png', scale: 1, ox: 0, oy: 0 },
-        { name: 'BATMAN', src: 'batman.png', scale: 1, ox: 0, oy: 0 },
-        { name: 'SPIDER', src: 'spiderman.png', scale: 1, ox: 0, oy: 0 },
-        { name: 'POPEYE', src: 'popeye.png', scale: 1, ox: 0, oy: 0 }
+        { name: 'BASE', src: 'potato.png', sx: 1, sy: 1, ox: 0, oy: 0 },
+        { name: 'BATMAN', src: 'batman.png', sx: 1, sy: 1, ox: 0, oy: 0 },
+        { name: 'SPIDER', src: 'spiderman.png', sx: 1, sy: 1, ox: 0, oy: 0 },
+        { name: 'POPEYE', src: 'popeye.png', sx: 1, sy: 1, ox: 0, oy: 0 }
     ];
     outfits.forEach(o => {
-        const img = new Image();
-        img.src = o.src;
-        o.img = img;
+        removeWhiteBg(o.src, (processedImg) => {
+            o.img = processedImg;
+        });
     });
     let currentOutfitIdx = 0;
 
@@ -103,10 +131,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Expand bounding box for the potato body
             const currentOutfit = outfits[currentOutfitIdx];
-            const scale = currentOutfit.scale;
+            const scaleX = currentOutfit.sx;
+            const scaleY = currentOutfit.sy;
             
-            const padX = (maxX - minX) * 0.4 * scale;
-            const padY = (maxY - minY) * 0.4 * scale;
+            const padX = (maxX - minX) * 0.4 * scaleX;
+            const padY = (maxY - minY) * 0.4 * scaleY;
             
             const basePw = (maxX - minX + padX * 2) * w;
             const basePh = (maxY - minY + padY * 2) * h;
@@ -118,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Draw Potato Body
             const currentOutfitImg = currentOutfit.img;
-            if(currentOutfitImg.complete) {
+            if(currentOutfitImg && currentOutfitImg.complete) {
                 canvasCtx.drawImage(currentOutfitImg, px, py, pw, ph);
             }
 
@@ -244,7 +273,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         switchOutfitBtn.textContent = `OUTFIT: ${outfits[currentOutfitIdx].name}`;
         
         // Update sliders if calibration menu is open
-        sliderScale.value = outfits[currentOutfitIdx].scale;
+        sliderScaleX.value = outfits[currentOutfitIdx].sx;
+        sliderScaleY.value = outfits[currentOutfitIdx].sy;
         sliderX.value = outfits[currentOutfitIdx].ox;
         sliderY.value = outfits[currentOutfitIdx].oy;
     });
@@ -257,7 +287,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Calibration Controls ---
     alignBtn.addEventListener('click', () => {
         calibrationControls.classList.remove('hidden');
-        sliderScale.value = outfits[currentOutfitIdx].scale;
+        sliderScaleX.value = outfits[currentOutfitIdx].sx;
+        sliderScaleY.value = outfits[currentOutfitIdx].sy;
         sliderX.value = outfits[currentOutfitIdx].ox;
         sliderY.value = outfits[currentOutfitIdx].oy;
     });
@@ -266,7 +297,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         calibrationControls.classList.add('hidden');
     });
 
-    sliderScale.addEventListener('input', (e) => outfits[currentOutfitIdx].scale = parseFloat(e.target.value));
+    sliderScaleX.addEventListener('input', (e) => outfits[currentOutfitIdx].sx = parseFloat(e.target.value));
+    sliderScaleY.addEventListener('input', (e) => outfits[currentOutfitIdx].sy = parseFloat(e.target.value));
     sliderX.addEventListener('input', (e) => outfits[currentOutfitIdx].ox = parseFloat(e.target.value));
     sliderY.addEventListener('input', (e) => outfits[currentOutfitIdx].oy = parseFloat(e.target.value));
 
