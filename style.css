@@ -257,3 +257,18 @@ canvas {
     0% { transform: translateY(-10vh) rotate(0deg); }
     100% { transform: translateY(110vh) rotate(360deg); }
 }
+
+/* Mobile Fixed Bottom Bar */
+.mobile-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--val-black);
+    padding: 15px 20px;
+    box-sizing: border-box;
+    border-top: 2px solid var(--val-red);
+    z-index: 1000;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.8);
+    text-align: center;
+}

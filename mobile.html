@@ -42,19 +42,19 @@
         <h2>SENDER CONTROL<br><span style="font-size: 1rem; color: var(--val-red); letter-spacing: 4px;">BY RADEON GAMING</span></h2>
     </div>
 
-    <div class="container" style="padding: 20px;">
-        <!-- Hidden video for MediaPipe processing -->
+    <div class="container" style="padding: 10px; padding-bottom: 140px;">
         <video class="input_video" playsinline></video>
         
         <!-- Canvas to draw the filter -->
-        <canvas class="output_canvas" width="1080" height="1080"></canvas>
+        <canvas class="output_canvas" width="1080" height="1080" style="margin: 0 auto; display: block;"></canvas>
 
-        <div class="val-box controls">
-            <h3 id="connectionStatus" class="status disconnected">DISCONNECTED</h3>
-            
-            <button id="toggleFilterBtn" class="val-btn primary">TOGGLE FILTER (ON)</button>
-            <button id="switchCameraBtn" class="val-btn">SWITCH CAMERA</button>
-            <button id="connectBtn" class="val-btn">CONNECT TO OBS</button>
+        <div class="mobile-bottom-bar">
+            <h3 id="connectionStatus" class="status disconnected" style="margin: 0 0 10px 0; font-size: 16px;">DISCONNECTED</h3>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="toggleFilterBtn" class="val-btn primary" style="flex: 1; padding: 15px 5px; font-size: 14px;">FILTER (ON)</button>
+                <button id="switchCameraBtn" class="val-btn secondary" style="flex: 1; padding: 15px 5px; font-size: 14px;">SWITCH CAM</button>
+            </div>
+            <button id="connectBtn" class="val-btn" style="width: 100%; margin-top: 10px; padding: 15px; font-size: 14px;">CONNECT TO OBS</button>
         </div>
     </div>
 
