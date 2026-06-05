@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potato Streamer | Setup</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>POTATO STREAMER</h1>
+    </div>
+
+    <div class="container">
+        <h2>Setup Guide</h2>
+        
+        <div class="val-box">
+            <ul class="steps">
+                <li><span>1.</span> Copy the OBS Browser Source Link below.</li>
+                <li><span>2.</span> In OBS, add a new "Browser Source" and paste the link. Set Width: 1280, Height: 720.</li>
+                <li><span>3.</span> Scan the QR code or open the Mobile Link on your phone.</li>
+                <li><span>4.</span> Allow camera access and start streaming!</li>
+            </ul>
+        </div>
+
+        <div class="val-box">
+            <h3>Your Stream ID</h3>
+            <p id="streamIdDisplay" style="font-size: 24px; color: var(--val-red); margin: 10px 0; font-weight: bold;">Generating...</p>
+            
+            <h3 style="margin-top: 20px;">OBS Browser Source Link</h3>
+            <input type="text" id="obsLink" class="val-input" readonly>
+            <button id="copyBtn" class="val-btn primary">COPY LINK</button>
+            <p id="copyStatus" class="status"></p>
+        </div>
+
+        <div class="val-box" id="mobileSetup" class="hidden">
+            <h3>Mobile Sender Link</h3>
+            <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0; padding: 10px; background: white; width: fit-content; margin-left: auto; margin-right: auto;"></div>
+            <a id="mobileLink" href="#" target="_blank" style="color: var(--val-white); font-size: 18px; text-decoration: underline;">Open Mobile Sender on this device</a>
+        </div>
+    </div>
+
+    <script>
+        // Generate a random ID
+        const generateId = () => Math.random().toString(36).substring(2, 10).toUpperCase();
+        
+        // Check if an ID is already saved in sessionStorage so refreshing doesn't break it
+        let streamId = sessionStorage.getItem('potatoStreamId');
+        if (!streamId) {
+            streamId = generateId();
+            sessionStorage.setItem('potatoStreamId', streamId);
+        }
+
+        document.getElementById('streamIdDisplay').textContent = streamId;
+
+        // Construct URLs based on current location
+        const currentUrl = new URL(window.location.href);
+        currentUrl.search = ''; // clear query
+        
+        let basePath = currentUrl.pathname;
+        if(basePath.endsWith('index.html')) {
+            basePath = basePath.substring(0, basePath.lastIndexOf('/'));
+        }
+        
+        const obsUrl = `${currentUrl.origin}${basePath}/obs.html?id=${streamId}`;
+        const mobileUrl = `${currentUrl.origin}${basePath}/mobile.html?id=${streamId}`;
+
+        document.getElementById('obsLink').value = obsUrl;
+        document.getElementById('mobileLink').href = mobileUrl;
+
+        // Generate QR Code
+        new QRCode(document.getElementById("qrcode"), {
+            text: mobileUrl,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        // Copy button logic
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const input = document.getElementById('obsLink');
+            input.select();
+            document.execCommand('copy');
+            
+            const status = document.getElementById('copyStatus');
+            status.textContent = "COPIED TO CLIPBOARD!";
+            status.className = "status connected";
+            
+            setTimeout(() => {
+                status.textContent = "";
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

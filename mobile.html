@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potato Streamer | Mobile</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- PeerJS -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
+    <!-- MediaPipe Face Mesh -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <style>
+        /* Hidden elements that we process but don't show */
+        .input_video {
+            display: none;
+        }
+        .output_canvas {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+            border: 2px solid var(--val-red);
+            border-radius: 4px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>SENDER CONTROL</h2>
+    </div>
+
+    <div class="container" style="padding: 20px;">
+        <!-- Hidden video for MediaPipe processing -->
+        <video class="input_video" playsinline></video>
+        
+        <!-- Canvas to draw the filter -->
+        <canvas class="output_canvas" width="1280" height="720"></canvas>
+
+        <div class="val-box controls">
+            <h3 id="connectionStatus" class="status disconnected">DISCONNECTED</h3>
+            
+            <button id="toggleFilterBtn" class="val-btn primary">TOGGLE FILTER (ON)</button>
+            <button id="switchCameraBtn" class="val-btn">SWITCH CAMERA</button>
+            <button id="connectBtn" class="val-btn">CONNECT TO OBS</button>
+        </div>
+    </div>
+
+    <!-- Load our script last -->
+    <script src="js/mobile.js"></script>
+</body>
+</html>
