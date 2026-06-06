@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const connectBtn = document.getElementById('connectBtn');
     const toggleFilterBtn = document.getElementById('toggleFilterBtn');
-    const switchCameraBtn = document.getElementById('switchCameraBtn');
     const switchOutfitBtn = document.getElementById('switchOutfitBtn');
     const switchBgBtn = document.getElementById('switchBgBtn');
     const statusText = document.getElementById('connectionStatus');
@@ -294,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 await attachStream(fallbackStream);
             } catch (fallbackErr) {
-                console.error("Camera error:", fallbackErr);
+                console.error("Camera error:",, fallbackErr);
                 statusText.textContent = "CAMERA ERROR";
                 statusText.className = "status disconnected";
                 alert(`Camera Error: ${fallbackErr.name} - ${fallbackErr.message}\n\n1. Ensure another app isn't using the camera.\n2. Check Chrome's Site Settings to ensure camera isn't blocked for this site.`);
@@ -316,11 +315,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     toggleFilterBtn.addEventListener('click', () => {
         isFilterOn = !isFilterOn;
         toggleFilterBtn.textContent = isFilterOn ? "TOGGLE FILTER (ON)" : "TOGGLE FILTER (OFF)";
-    });
-
-    switchCameraBtn.addEventListener('click', () => {
-        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-        startCamera();
     });
 
     switchOutfitBtn.addEventListener('click', () => {
@@ -375,12 +369,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             const obsPeerId = `potato-${streamId}-obs`;
             currentCall = peer.call(obsPeerId, stream);
             
-            currentCall.on('stream', () => {
-                statusText.textContent = "STREAMING TO OBS";
-                statusText.className = "status connected";
-                connectBtn.style.display = 'none';
-            });
+            // Wait for WebRTC to officially connect to OBS
+            statusText.textContent = "CALLING OBS...";
             
+            if (currentCall.peerConnection) {
+                currentCall.peerConnection.oniceconnectionstatechange = () => {
+                    const state = currentCall.peerConnection.iceConnectionState;
+                    if (state === 'connected' || state === 'completed') {
+                        statusText.textContent = "CONNECTED TO OBS";
+                        statusText.className = "status connected";
+                        connectBtn.style.display = 'none';
+                    } else if (state === 'disconnected' || state === 'failed') {
+                        statusText.textContent = "CONNECTION ERROR (OBS NOT FOUND)";
+                        statusText.className = "status disconnected";
+                        connectBtn.style.display = 'inline-block';
+                    }
+                };
+            }
+
             // Optimize video track sender
             if (currentCall.peerConnection) {
                 const senders = currentCall.peerConnection.getSenders();
