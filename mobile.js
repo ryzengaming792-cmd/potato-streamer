@@ -84,7 +84,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         { name: 'BASE', src: 'potato.png', sx: 1, sy: 1, ox: 0, oy: 0 },
         { name: 'BATMAN', src: 'batman.png', sx: 1, sy: 1, ox: 0, oy: 0 },
         { name: 'SPIDER', src: 'spiderman.png', sx: 1, sy: 1, ox: 0, oy: 0 },
-        { name: 'POPEYE', src: 'popeye.png', sx: 1, sy: 1, ox: 0, oy: 0 }
+        { name: 'POPEYE', src: 'popeye.png', sx: 1, sy: 1, ox: 0, oy: 0 },
+        { name: 'T-REX', src: 'trex.png', sx: 1.1, sy: 1.1, ox: 0, oy: -0.05 }
     ];
     outfits.forEach(o => {
         removeWhiteBg(o.src, (processedImg) => {
@@ -124,11 +125,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- MediaPipe Setup ---
     function onResults(results) {
         canvasCtx.save();
-        // Clear canvas (transparent background for OBS)
+        // Clear canvas
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
         const currentBg = backgrounds[currentBgIdx];
-        if (currentBg.img && currentBg.img.complete) {
+        if (currentBg.name === 'NONE') {
+            // Draw pure Green Screen for OBS Chroma Keying
+            canvasCtx.fillStyle = '#00FF00';
+            canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+        } else if (currentBg.img && currentBg.img.complete) {
             canvasCtx.drawImage(currentBg.img, 0, 0, canvasElement.width, canvasElement.height);
         }
 
@@ -171,6 +176,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             const py = (minY - padY) * h + (currentOutfit.oy * basePh);
             const pw = basePw;
             const ph = basePh;
+
+            // Calculate head rotation (tilt)
+            let headAngle = 0;
+            const leftEyeLm = landmarks[133];
+            const rightEyeLm = landmarks[362];
+            if (leftEyeLm && rightEyeLm) {
+                const dx = (rightEyeLm.x - leftEyeLm.x) * w;
+                const dy = (rightEyeLm.y - leftEyeLm.y) * h;
+                headAngle = Math.atan2(dy, dx);
+            }
+
+            canvasCtx.save();
+            // Translate to center of potato, rotate, then translate back to draw everything tilted
+            const centerX = px + pw / 2;
+            const centerY = py + ph / 2;
+            canvasCtx.translate(centerX, centerY);
+            canvasCtx.rotate(headAngle);
+            canvasCtx.translate(-centerX, -centerY);
 
             // Draw Potato Body
             const currentOutfitImg = currentOutfit.img;
@@ -217,6 +240,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(typeof FACEMESH_LEFT_EYE !== 'undefined') drawFeature(FACEMESH_LEFT_EYE, eyesPad, eyesPad);
             if(typeof FACEMESH_RIGHT_EYE !== 'undefined') drawFeature(FACEMESH_RIGHT_EYE, eyesPad, eyesPad);
             if(typeof FACEMESH_LIPS !== 'undefined') drawFeature(FACEMESH_LIPS, mouthPad, mouthPad + 0.05);
+
+            canvasCtx.restore(); // Restore rotation
         }
         
         canvasCtx.restore();
@@ -335,29 +360,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- PeerJS Setup ---
     connectBtn.addEventListener('click', () => {
         if (peer) return; // Already connecting
+        
+        statusText.textContent = "CONNECTING TO LOBBY...";
+        statusText.className = "status disconnected";
 
-        statusText.textContent = "CONNECTING TO SERVER...";
-        statusText.className = "status";
-
-        peer = new Peer({ debug: 2 });
-
+        peer = new Peer();
+        
         peer.on('open', (id) => {
-            statusText.textContent = "CALLING OBS...";
+            console.log('My peer ID is: ' + id);
             
-            // Capture stream from canvas at 30 FPS
-            const canvasStream = canvasElement.captureStream(30);
+            // Capture canvas at a slightly reduced framerate (24fps) to heavily optimize WebRTC bandwidth
+            const stream = canvasElement.captureStream(24);
             
-            // Call the OBS receiver
-            currentCall = peer.call(obsPeerId, canvasStream);
+            currentCall = peer.call(streamId, stream);
             
             currentCall.on('stream', () => {
-                // Not expecting stream back, but means connection is good
+                statusText.textContent = "STREAMING TO OBS";
+                statusText.className = "status connected";
+                connectBtn.style.display = 'none';
             });
+            
+            // Optimize video track sender
+            if (currentCall.peerConnection) {
+                const senders = currentCall.peerConnection.getSenders();
+                senders.forEach(sender => {
+                    if (sender.track && sender.track.kind === 'video') {
+                        const parameters = sender.getParameters();
+                        if (!parameters.encodings) parameters.encodings = [{}];
+                        parameters.encodings[0].maxBitrate = 1500000; // Cap at 1.5 Mbps to prevent local network lag spikes
+                        sender.setParameters(parameters).catch(e => console.error("Could not set bandwidth:", e));
+                    }
+                });
+            }
 
-            // We consider it connected when we successfully initiate the call
-            statusText.textContent = "CONNECTED TO OBS";
-            statusText.className = "status connected";
-            connectBtn.style.display = 'none';
+            currentCall.on('error', (err) => {
+                console.error(err);
+                statusText.textContent = "CONNECTION ERROR";
+                statusText.className = "status disconnected";
+            });
         });
 
         peer.on('error', (err) => {

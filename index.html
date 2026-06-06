@@ -19,85 +19,70 @@
         <div class="val-box">
             <ul class="steps">
                 <li><span>1.</span> Copy the OBS Browser Source Link below.</li>
-                <li><span>2.</span> In OBS, add a new "Browser Source" and paste the link. Set Width: 1080, Height: 1080.</li>
-                <li><span>3.</span> Scan the QR code or open the Mobile Link on your phone.</li>
-                <li><span>4.</span> Allow camera access and start streaming!</li>
-            </ul>
-        </div>
-
-        <div class="val-box">
-            <h3>Your Stream ID</h3>
-            <p id="streamIdDisplay" style="font-size: 24px; color: var(--val-red); margin: 10px 0; font-weight: bold;">Generating...</p>
+        <h2 style="margin-bottom: 30px;">1. Create Your Lobby</h2>
+        <button id="generateBtn" class="val-btn primary" style="width: 100%; margin-bottom: 30px;">Generate Stream ID</button>
+        
+        <div id="setupControls" class="hidden" style="width: 100%;">
+            <input type="text" id="streamIdInput" class="val-input" readonly>
             
-            <h3 style="margin-top: 20px;">OBS Browser Source Link</h3>
-            <input type="text" id="obsLink" class="val-input" readonly>
-            <button id="copyBtn" class="val-btn primary">COPY LINK</button>
-            <p id="copyStatus" class="status"></p>
-        </div>
-
-        <div class="val-box" id="mobileSetup">
-            <h3>Mobile Sender Link</h3>
-            <div id="qrcode" style="display: flex; justify-content: center; margin: 20px 0; padding: 10px; background: white; width: fit-content; max-width: 100%; margin-left: auto; margin-right: auto; overflow: hidden;"></div>
-            <button id="mobileLinkBtn" class="val-btn primary" style="width: 100%; margin-top: 15px;">OPEN SENDER ON THIS DEVICE</button>
+            <h2 style="margin-top: 30px; margin-bottom: 10px;">2. Connect Mobile Camera</h2>
+            <p style="color: var(--val-grey);">Scan this code with your phone, or open the link directly on your phone.</p>
+            <div id="qrcode"></div>
+            
+            <a id="mobileLinkBtn" href="#" target="_blank" style="text-decoration: none;">
+                <button class="val-btn primary" style="width: 100%; margin-top: 10px;">OPEN CAMERA ON THIS DEVICE</button>
+            </a>
+            
+            <h2 style="margin-top: 40px; margin-bottom: 10px;">3. Add to OBS</h2>
+            <p style="color: var(--val-grey);">Copy this link and add it as a <strong>Browser Source</strong> in OBS.</p>
+            <input type="text" id="obsLink" class="val-input">
+            <button class="val-btn secondary" onclick="copyObsLink()" style="width: 100%;">Copy OBS Link</button>
+            <p style="color: var(--val-red); font-size: 14px; margin-top: 15px;">* Be sure to add a <strong>Chroma Key</strong> filter in OBS to remove the Green Screen!</p>
         </div>
     </div>
 
     <script>
         // Generate a random ID
         const generateId = () => Math.random().toString(36).substring(2, 10).toUpperCase();
-        
-        // Check if an ID is already saved in sessionStorage so refreshing doesn't break it
-        let streamId = sessionStorage.getItem('potatoStreamId');
-        if (!streamId) {
-            streamId = generateId();
-            sessionStorage.setItem('potatoStreamId', streamId);
-        }
 
-        document.getElementById('streamIdDisplay').textContent = streamId;
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            let streamId = generateId();
+            
+            // Show controls
+            document.getElementById('generateBtn').style.display = 'none';
+            document.getElementById('setupControls').classList.remove('hidden');
 
-        // Construct URLs based on current location
-        const currentUrl = new URL(window.location.href);
-        currentUrl.search = ''; // clear query
-        
-        let basePath = currentUrl.pathname;
-        if(basePath.endsWith('index.html')) {
-            basePath = basePath.substring(0, basePath.lastIndexOf('/'));
-        }
-        
-        const obsUrl = `${currentUrl.origin}${basePath}/obs.html?id=${streamId}`;
-        const mobileUrl = `${currentUrl.origin}${basePath}/mobile.html?id=${streamId}`;
+            // Construct URLs
+            const currentUrl = new URL(window.location.href);
+            currentUrl.search = ''; 
+            let basePath = currentUrl.pathname;
+            if(basePath.endsWith('index.html')) basePath = basePath.substring(0, basePath.lastIndexOf('/'));
+            
+            const obsUrl = `${currentUrl.origin}${basePath}/obs.html?id=${streamId}`;
+            const mobileUrl = `${currentUrl.origin}${basePath}/mobile.html?id=${streamId}`;
 
-        document.getElementById('obsLink').value = obsUrl;
-        
-        // Mobile button click
-        document.getElementById('mobileLinkBtn').addEventListener('click', () => {
-            window.location.href = mobileUrl;
+            document.getElementById('streamIdInput').value = `Lobby ID: ${streamId}`;
+            document.getElementById('obsLink').value = obsUrl;
+            document.getElementById('mobileLinkBtn').href = mobileUrl;
+
+            // Generate QR Code
+            document.getElementById("qrcode").innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: mobileUrl,
+                width: 200,
+                height: 200,
+                colorDark : "#0f1923",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
         });
 
-        // Generate QR Code
-        new QRCode(document.getElementById("qrcode"), {
-            text: mobileUrl,
-            width: 200,
-            height: 200,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
-        // Copy button logic
-        document.getElementById('copyBtn').addEventListener('click', () => {
-            const input = document.getElementById('obsLink');
-            input.select();
+        window.copyObsLink = function() {
+            const obsLink = document.getElementById('obsLink');
+            obsLink.select();
             document.execCommand('copy');
-            
-            const status = document.getElementById('copyStatus');
-            status.textContent = "COPIED TO CLIPBOARD!";
-            status.className = "status connected";
-            
-            setTimeout(() => {
-                status.textContent = "";
-            }, 3000);
-        });
+            alert("OBS Link Copied! Add this as a Browser Source in OBS, width/height 1080x1080, and add a Chroma Key filter to remove the green background.");
+        };
     </script>
 </body>
 </html>

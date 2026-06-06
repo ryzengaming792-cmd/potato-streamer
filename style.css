@@ -103,160 +103,111 @@ h1, h2, h3 {
     background-color: var(--val-dark-lighter);
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 30px;
-    position: relative;
-    margin-top: 20px;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 800px;
+    margin-top: 150px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.val-box::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    right: -1px;
-    width: 20px;
-    height: 20px;
-    background-color: var(--val-red);
-    clip-path: polygon(100% 0, 0% 100%, 100% 100%);
-}
-
-/* Input Fields */
+/* Premium Inputs */
 .val-input {
-    background-color: var(--val-dark);
-    border: 1px solid var(--val-white);
+    width: 80%;
+    max-width: 400px;
+    padding: 15px;
+    font-size: 18px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--val-grey);
     color: var(--val-white);
-    padding: 12px;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 16px;
-    width: 100%;
-    margin-bottom: 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
 }
 
 .val-input:focus {
     outline: none;
     border-color: var(--val-red);
+    box-shadow: 0 0 15px rgba(255, 0, 60, 0.5);
 }
 
-/* Status Text */
-.status {
-    margin-top: 10px;
+/* Premium Buttons */
+.val-btn {
+    padding: 15px 30px;
     font-size: 18px;
-}
-
-.status.connected {
-    color: #4CAF50;
-}
-
-.status.disconnected {
-    color: var(--val-red);
-}
-
-/* Video Container */
-.video-container {
-    position: relative;
-    width: 100%;
-    max-width: 1080px;
-    aspect-ratio: 1 / 1;
-    background-color: var(--val-black);
-    border: 2px solid var(--val-red);
-    box-shadow: 0 0 20px rgba(255, 70, 85, 0.2);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-}
-
-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 10;
-}
-
-.no-signal {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--val-dark);
-    z-index: 20;
-}
-
-.no-signal h2 {
-    font-size: 4rem;
-    color: var(--val-red);
-    animation: blink 2s infinite;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-/* Utility */
-.hidden {
-    display: none !important;
-}
-
-/* Steps List */
-.steps {
-    text-align: left;
-    margin: 20px 0;
-    list-style-position: inside;
-}
-
-.steps li {
-    margin-bottom: 10px;
-    font-size: 18px;
-}
-
-.steps span {
-    color: var(--val-red);
     font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
 }
 
-/* PlayStation Neon Falling Shapes */
+.val-btn.primary {
+    background-color: var(--val-red);
+    color: var(--val-white);
+    box-shadow: 0 0 15px rgba(255, 0, 60, 0.4);
+}
+
+.val-btn.primary:hover {
+    background-color: #ff3366;
+    box-shadow: 0 0 25px rgba(255, 0, 60, 0.8);
+    transform: translateY(-2px);
+}
+
+.val-btn.secondary {
+    background-color: transparent;
+    color: var(--val-white);
+    border: 2px solid var(--val-grey);
+}
+
+.val-btn.secondary:hover {
+    border-color: var(--val-white);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* QR Code Styling */
+#qrcode {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    margin: 20px auto;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+/* PS Shapes Animation */
 .shapes-container {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    z-index: -1;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
 }
 
-.shape {
+.ps-shape {
     position: absolute;
-    top: -10vh;
-    font-family: Arial, sans-serif;
+    top: -50px;
+    font-size: 30px;
+    color: rgba(255, 255, 255, 0.1);
     animation: fall linear infinite;
-    text-shadow: 0 0 15px currentColor;
-    filter: drop-shadow(0 0 5px currentColor);
+    text-shadow: 0 0 10px rgba(255, 0, 60, 0.3);
 }
-
-.shape.triangle { color: #00ffcc; } /* Neon Cyan/Green */
-.shape.circle { color: #ff3366; } /* Neon Pink/Red */
-.shape.cross { color: #3399ff; } /* Neon Blue */
-.shape.square { color: #cc33ff; } /* Neon Purple */
 
 @keyframes fall {
-    0% { transform: translateY(-10vh) rotate(0deg); }
-    100% { transform: translateY(110vh) rotate(360deg); }
+    0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
 }
+
+.hidden { display: none !important; }
 
 /* Mobile Fixed Bottom Bar */
 .mobile-bottom-bar {
