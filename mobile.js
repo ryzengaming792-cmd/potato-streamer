@@ -372,7 +372,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Capture canvas at a slightly reduced framerate (24fps) to heavily optimize WebRTC bandwidth
             const stream = canvasElement.captureStream(24);
             
-            currentCall = peer.call(streamId, stream);
+            const obsPeerId = `potato-${streamId}-obs`;
+            currentCall = peer.call(obsPeerId, stream);
             
             currentCall.on('stream', () => {
                 statusText.textContent = "STREAMING TO OBS";

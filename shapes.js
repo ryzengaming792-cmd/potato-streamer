@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const shape = document.createElement('div');
         const randIndex = Math.floor(Math.random() * shapes.length);
         shape.textContent = shapes[randIndex];
-        shape.className = `shape ${classes[randIndex]}`;
+        shape.className = `ps-shape ${classes[randIndex]}`;
         
         const left = Math.random() * 100;
         const duration = 10 + Math.random() * 15; // 10 to 25 seconds (slow, smooth fall)
