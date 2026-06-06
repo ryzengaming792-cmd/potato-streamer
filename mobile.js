@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 await attachStream(fallbackStream);
             } catch (fallbackErr) {
-                console.error("Camera error:",, fallbackErr);
+                console.error("Camera error:", fallbackErr);
                 statusText.textContent = "CAMERA ERROR";
                 statusText.className = "status disconnected";
                 alert(`Camera Error: ${fallbackErr.name} - ${fallbackErr.message}\n\n1. Ensure another app isn't using the camera.\n2. Check Chrome's Site Settings to ensure camera isn't blocked for this site.`);
